@@ -1,9 +1,12 @@
-// The board: every deal on it was found and checked by the maker on
-// Friday 27 November 2026 (Black Friday), between 06:33 and 06:40 UTC,
-// by reading the price in a deals roundup updated that morning that
+// Black Friday Radar — the deal board.
+//
+// Every deal here was found and checked by the maker on Friday
+// 27 November 2026 (Black Friday), between 06:33 and 06:40 UTC, by
+// reading the price in a deals roundup updated that morning that
 // names the store, and cross-checking the headline prices against a
 // second roundup where one is listed. Prices move all day on Black
 // Friday, so the site tells shoppers to confirm at checkout.
+//
 // Each deal carries its store link (a search at the store itself),
 // its sale price, its usual price, the verdict on whether it is
 // really a deal, the evidence for that verdict, and when it was
@@ -11,10 +14,12 @@
 
 export const CHECKED_AT = "2026-11-27T06:40:00Z";
 export const CHECKED_LABEL = "Fri 27 Nov 2026, 06:40 UTC";
+export const CHECKED_SHORT = "Nov 27, 06:40 UTC";
 
-// verdict: "new-low" (lowest price ever seen for it), "strong"
-// (a deep cut that matches or beats the year's best), or "routine"
-// (a small or recurring cut — buy it if you need it, not for the sale).
+// verdict: "new-low" is the lowest price ever seen for the product,
+// "strong" is a deep cut at or near the year's best price, and
+// "routine" is a small or recurring cut — buy it if you need it,
+// not for the sale.
 export const VERDICTS = {
   "new-low": { label: "NEW LOW", blurb: "Lowest price ever seen for this product." },
   strong: { label: "STRONG DEAL", blurb: "A deep cut at or near the year's best price." },
@@ -33,6 +38,8 @@ export const CATEGORIES = [
   "Accessories",
   "Gift cards",
 ];
+
+export const STORES = ["Amazon", "Best Buy", "Walmart"];
 
 export const deals = [
   {
@@ -581,6 +588,8 @@ export const comparisons = [
   },
 ];
 
+// When each store's Black Friday sale runs, so a shopper knows
+// how long a price should hold.
 export const SALE_WINDOWS = [
   { store: "Amazon", window: "Black Friday Week, Nov 19–30" },
   { store: "Best Buy", window: "Black Friday Sale, Nov 19–28" },

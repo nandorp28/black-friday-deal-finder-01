@@ -1,42 +1,43 @@
-[![make.fun](https://make.fun/badge/black-friday-deal-finder-01.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
-[![make.fun rank](https://make.fun/badge/black-friday-deal-finder-01/nandorp28/black-friday-deal-finder-01/rank.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
-[![make.fun reward](https://make.fun/badge/black-friday-deal-finder-01/nandorp28/black-friday-deal-finder-01/reward.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
+[![Black Friday Deal Finder](https://img.shields.io/badge/make.fun-Black%20Friday%20Deal%20Finder-red)](https://make.fun/bounty/black-friday-deal-finder-01)
+[![40 verified deals](https://img.shields.io/badge/deals-40%20verified-green)](https://make.fun/bounty/black-friday-deal-finder-01)
+[![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://make.fun/bounty/black-friday-deal-finder-01)
 
-# Black Friday Radar — 40 verified Black Friday deals, checked today
+# Black Friday Radar
 
-A Black Friday deal finder for the [make.fun bounty](https://make.fun/bounty/black-friday-deal-finder-01): a static site listing **40 real Black Friday / Cyber Monday deals**, each with its product, store, store link, sale price, usual price, discount, and the time it was checked — plus an honest verdict on whether it is really a deal.
+A static deal finder for Black Friday and Cyber Monday 2026: **40 real deals**, each found and checked by the maker on Fri 27 Nov 2026, 06:40 UTC, with its product, store, store link, sale price, usual price, discount, check time, source — and an honest verdict on whether it is really a deal (11 NEW LOW, 26 STRONG DEAL, 3 ROUTINE SALE). Total savings across the board: **$6,535**.
 
-## What it does
-
-- **40 verified deals** across 10 categories and 3 stores (Amazon, Best Buy, Walmart), checked on **Fri 27 Nov 2026, 06:33–06:40 UTC** — Black Friday itself. Every deal names where its price was read.
-- **Honest verdicts:** 11 NEW LOWs (lowest price ever), 26 STRONG deals, 3 ROUTINE sales — with the evidence for each, including the ones that are not worth chasing (a 13%-off Mac mini, a 15%-off Quest 3S, an AirTag 4-pack that costs more per tracker than the single).
-- **Search and filters that work:** text search, category, store, minimum discount, sort (biggest saving / biggest discount / cheapest / new lows first), and verdict chips. Filter state lives in the URL (`#/?verdict=new-low`), so a filtered view has an address.
-- **Same product, compared:** AirPods Pro 3 at Amazon ($149) vs Walmart ($149) vs Best Buy ($180); AirTag 2 single vs 4-pack per tracker.
-- **A page per deal** (`#/deal/<id>`) with the full evidence, the sale window, and the store link.
-- **Phone layout** that keeps the whole board usable at 390px wide.
-
-Total savings across the board: over $6,400 off usual prices.
-
-## How the prices were checked
-
-Each deal was found and checked by the maker on Friday 27 November 2026 by reading the price in a deals roundup updated that morning that names the store (TrendThread Black Friday diary, NY Post live deals, USA Today, Mashable, Redmond Pie, BeeBulletin, Yahoo Shopping, Medium shortlist), cross-checking the headline prices against a second roundup. The check time and source sit on every deal. Prices move all day on Black Friday — the site tells shoppers to confirm at checkout.
+The board leads with the three biggest savings (Hisense 98" QD5 TV, save $1,700; Samsung The Frame 65", save $403; Dyson V9 Motorbar, save $330), compares the same product across stores (AirPods Pro 3: Amazon $149 / Walmart $149 / Best Buy $180; AirTag 2 single $18 vs four-pack $80), and filters by search, category, store, minimum discount, sort order and verdict — with the filter state in the URL hash, so `#/?verdict=new-low` shows the 11 new lows.
 
 ## Run it
 
 ```sh
-node serve.ts        # serves app/ at http://localhost:8080
+node serve.ts            # http://localhost:8080
+node serve.ts --port 8081
 ```
 
-No build step, no network requests at run time: the deals are data in `app/data.js`, and every script, stylesheet and image is a file under `app/`.
+No build step, no network requests: `app/` is plain HTML, CSS and ES modules.
 
-## Hand in
+## Hand it in
 
 ```sh
 mkdir -p out && MAKEFUN_OUTPUT_DIR=out node main.ts
 ```
 
-`main.ts` copies `app/` and `screenshots/` to the output directory and writes `dossier.json` with the kit's vendored library. Screenshots are in `screenshots/` (see `shots.json` for what each one shows).
+`main.ts` copies `app/` and `screenshots/` into the output directory and writes `dossier.json` with `buildDossier` from `vendor/makefun-frontend.ts` (the kit's copy, unchanged).
+
+## How the deals were checked
+
+Every price was read on Black Friday morning, 27 Nov 2026, 06:33–06:40 UTC, in a deals roundup updated that morning that names the store, with headline prices cross-checked against a second roundup. Each deal page names where its price was read and when. Prices move all day on Black Friday, so the site tells shoppers to confirm at checkout.
+
+## Layout
+
+- `main.ts` — the hand-in program (Node 22, standard library only)
+- `serve.ts` — the local static server
+- `app/` — the site: `index.html`, `style.css`, `data.js` (the 40 deals), `filters.js` (search / filter / sort / hash state), `views.js` (board and deal pages), `main.js` (hash router)
+- `screenshots/` — 4 renders of the site: cover, one deal page, the new-lows filter, phone size
+- `vendor/makefun-frontend.ts` — the kit's dossier library, unchanged
+- `shots.json` — what each screenshot shows
 
 ## License
 
-MIT — see [LICENSE](LICENSE).
+MIT. See [LICENSE](LICENSE).

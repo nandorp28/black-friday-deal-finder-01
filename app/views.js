@@ -1,168 +1,391 @@
-// HTML for the board: the list page, the deal page, and the cards.
-// Every value from the data is escaped before it reaches the page.
-// Prices are shown as whole dollars except cents where the store
-// charges them; the discount is always computed from the two prices,
-// never typed in, so the numbers on a card always add up.
+// Black Friday Radar — the views: home board and deal pages.
+// Everything renders from data.js through filters.js; no network.
 
-import { CHECKED_LABEL, VERDICTS, comparisons, deals, SALE_WINDOWS } from "./data.js";
-import { applyFilters, filtersToHash, pct, saving, storeList, totals } from "./filters.js";
+import {
+  CHECKED_SHORT,
+  SALE_WINDOWS,
+  VERDICTS,
+  comparisons,
+  deals,
+} from "./data.js";
+import {
+  MIN_DISCOUNTS,
+  SORTS,
+  applyFilters,
+  boardTotals,
+  hashFromState,
+  isDefaultState,
+  money,
+  percentOff,
+  savingOf,
+  sortLabel,
+  topSavings,
+} from "./filters.js";
+import { CATEGORIES, STORES } from "./data.js";
 
-const esc = (s) =>
-  String(s).replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
+function esc(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
-const usd = (n) =>
-  Number.isInteger(n) ? `$${n.toLocaleString("en-US")}` : `$${n.toFixed(2)}`;
-
-const checkedShort = (iso) => {
-  const d = new Date(iso);
+function verdictChip(deal) {
+  const info = VERDICTS[deal.verdict];
   return (
-    d.toLocaleString("en-US", {
-      month: "short",
-      day: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-      timeZone: "UTC",
-    }) + " UTC"
+    '<span class="verdict-chip ' +
+    esc(deal.verdict) +
+    '">' +
+    esc(info.label) +
+    "</span>"
   );
-};
-
-function verdictChip(d) {
-  const v = VERDICTS[d.verdict];
-  return `<span class="verdict verdict-${d.verdict}" title="${esc(v.blurb)}">${v.label}</span>`;
 }
 
-export function dealCard(d) {
-  return `<article class="card">
-  <div class="card-top"><span class="cat">${esc(d.category)}</span><span class="store">${esc(d.store)}</span></div>
-  <h3><a href="#/deal/${esc(d.id)}">${esc(d.title)}</a></h3>
-  <div class="prices"><span class="now">${usd(d.price)}</span><s class="was">${usd(d.was)}</s><span class="off">${pct(d)}% off</span></div>
-  <div class="save">You save ${usd(saving(d))}</div>
-  <div class="verdict-row">${verdictChip(d)}<span class="evidence">${esc(d.evidence)}</span></div>
-  <div class="checked">Checked ${checkedShort(d.checked)} · ${esc(d.source.split(";")[0])}</div>
-  <div class="card-actions"><a class="buy" href="${esc(d.url)}" target="_blank" rel="noopener">View at ${esc(d.store)} ↗</a><a class="details" href="#/deal/${esc(d.id)}">Details</a></div>
-</article>`;
+function priceRow(deal, big) {
+  const cls = big ? "detail-price" : "deal-price";
+  return (
+    '<p class="' +
+    cls +
+    '"><span class="now">' +
+    money(deal.price) +
+    '</span><span class="was">' +
+    money(deal.was) +
+    '</span><span class="pct">' +
+    percentOff(deal) +
+    "% off</span></p>"
+  );
 }
 
-function heroCard(d, tag) {
-  return `<article class="hero-card">
-  <div class="hero-tag">${esc(tag)}</div>
-  <h3><a href="#/deal/${esc(d.id)}">${esc(d.title)}</a></h3>
-  <div class="hero-store">${esc(d.store)} · ${esc(d.category)}</div>
-  <div class="prices"><span class="now">${usd(d.price)}</span><s class="was">${usd(d.was)}</s><span class="off">${pct(d)}% off</span></div>
-  <div class="save">Save ${usd(saving(d))} — ${esc(d.evidence)}</div>
-  <div class="checked">Checked ${checkedShort(d.checked)}</div>
-  <a class="buy" href="${esc(d.url)}" target="_blank" rel="noopener">View at ${esc(d.store)} ↗</a>
-</article>`;
+function storeButton(deal) {
+  return (
+    '<a class="btn" href="' +
+    esc(deal.url) +
+    '" target="_blank" rel="noopener">View at ' +
+    esc(deal.store) +
+    " ↗</a>"
+  );
 }
 
-function comparePanel(c) {
-  const rows = c.rows
+function dealCard(deal) {
+  const note = deal.note ? '<p class="deal-note">' + esc(deal.note) + "</p>" : "";
+  return (
+    '<article class="deal">' +
+    '<p class="deal-top"><span class="cat">' +
+    esc(deal.category) +
+    '</span><span class="store">' +
+    esc(deal.store) +
+    "</span></p>" +
+    '<h3><a href="#/deal/' +
+    esc(deal.id) +
+    '">' +
+    esc(deal.title) +
+    "</a></h3>" +
+    priceRow(deal, false) +
+    '<p class="save-line">You save ' +
+    money(savingOf(deal)) +
+    "</p>" +
+    '<p class="verdict">' +
+    verdictChip(deal) +
+    '<span class="verdict-text">' +
+    esc(deal.evidence) +
+    "</span></p>" +
+    '<p class="deal-source">Checked ' +
+    CHECKED_SHORT +
+    " · " +
+    esc(deal.source) +
+    "</p>" +
+    '<p class="deal-actions">' +
+    storeButton(deal) +
+    '<a class="link-btn" href="#/deal/' +
+    esc(deal.id) +
+    '">Details</a></p>' +
+    note +
+    "</article>"
+  );
+}
+
+function statsStrip() {
+  const totals = boardTotals(deals);
+  return (
+    '<section class="stats" aria-label="Board totals">' +
+    '<div class="stat"><b>' +
+    totals.count +
+    "</b><span>verified deals</span></div>" +
+    '<div class="stat"><b>' +
+    totals.newLows +
+    "</b><span>new lows</span></div>" +
+    '<div class="stat"><b>' +
+    money(totals.total) +
+    "</b><span>total savings</span></div>" +
+    '<div class="stat"><b>' +
+    totals.stores.length +
+    " stores</b><span>" +
+    totals.stores.map(esc).join(" · ") +
+    "</span></div>" +
+    '<div class="stat"><b>27 Nov</b><span>checked today, Fri 27 Nov 2026, 06:40 UTC</span></div>' +
+    "</section>"
+  );
+}
+
+function heroSection() {
+  const top = topSavings(deals, 3);
+  const ranks = ["#1 BIGGEST SAVING", "#2", "#3"];
+  const cards = top
     .map(
-      (r, i) =>
-        `<tr class="${i === 0 ? "best" : ""}"><td>${esc(r.store)}</td><td class="num">${usd(r.price)}</td><td>${esc(r.note)}</td></tr>`,
+      (deal, i) =>
+        '<article class="hero-card">' +
+        '<p class="hero-rank">' +
+        ranks[i] +
+        "</p>" +
+        "<h3>" +
+        esc(deal.title) +
+        "</h3>" +
+        '<p class="hero-meta">' +
+        esc(deal.store) +
+        " · " +
+        esc(deal.category) +
+        "</p>" +
+        '<p class="hero-price"><span class="now">' +
+        money(deal.price) +
+        '</span><span class="was">' +
+        money(deal.was) +
+        '</span><span class="pct">' +
+        percentOff(deal) +
+        "% off</span></p>" +
+        '<p class="hero-save">Save ' +
+        money(savingOf(deal)) +
+        " — " +
+        esc(deal.evidence) +
+        "</p>" +
+        '<p class="hero-checked">Checked ' +
+        CHECKED_SHORT +
+        "</p>" +
+        storeButton(deal) +
+        "</article>",
     )
     .join("");
-  return `<section class="compare"><h2>${esc(c.title)}</h2><table><thead><tr><th>Store</th><th>Price</th><th>Read</th></tr></thead><tbody>${rows}</tbody></table><p class="src">Source: ${esc(c.source)}</p></section>`;
+  return (
+    '<h2 class="section-title">Top of the board — biggest savings today</h2>' +
+    '<section class="hero">' +
+    cards +
+    "</section>"
+  );
 }
 
-function statsStrip(t) {
-  return `<section class="stats" aria-label="Board totals">
-  <div class="stat"><b>${t.count}</b><span>verified deals</span></div>
-  <div class="stat"><b>${t.newLows}</b><span>new lows</span></div>
-  <div class="stat"><b>$${t.saved.toLocaleString("en-US")}</b><span>total savings</span></div>
-  <div class="stat"><b>${storeList().length} stores</b><span>Amazon · Best Buy · Walmart</span></div>
-  <div class="stat"><b>27 Nov</b><span>checked today, ${CHECKED_LABEL}</span></div>
-</section>`;
+function compareSection() {
+  const boxes = comparisons
+    .map((table) => {
+      const best = Math.min(...table.rows.map((row) => row.price));
+      const rows = table.rows
+        .map(
+          (row) =>
+            '<tr class="' +
+            (row.price === best ? "best" : "") +
+            '"><td>' +
+            esc(row.store) +
+            '</td><td class="price">' +
+            money(row.price) +
+            "</td><td>" +
+            esc(row.note) +
+            "</td></tr>",
+        )
+        .join("");
+      return (
+        '<div class="compare-box"><h3>' +
+        esc(table.title) +
+        "</h3>" +
+        "<table><thead><tr><th>Store</th><th>Price</th><th>Read</th></tr></thead>" +
+        "<tbody>" +
+        rows +
+        "</tbody></table>" +
+        '<p class="compare-source">Source: ' +
+        esc(table.source) +
+        "</p></div>"
+      );
+    })
+    .join("");
+  return '<section class="compare">' + boxes + "</section>";
 }
 
-function controls(f) {
-  const cats = ["all", ...new Set(deals.map((d) => d.category))];
-  const stores = ["all", ...storeList()];
-  const opt = (list, current) =>
-    list
-      .map(
-        (v) =>
-          `<option value="${esc(v)}" ${v === current ? "selected" : ""}>${v === "all" ? "All" : esc(v)}</option>`,
-      )
-      .join("");
+function selectOptions(options, current) {
+  return options
+    .map(
+      (opt) =>
+        '<option value="' +
+        esc(opt.value) +
+        '"' +
+        (String(opt.value) === String(current) ? " selected" : "") +
+        ">" +
+        esc(opt.label) +
+        "</option>",
+    )
+    .join("");
+}
+
+function controlsSection(state) {
+  const categoryOpts = [{ value: "all", label: "All" }].concat(
+    CATEGORIES.map((c) => ({ value: c, label: c })),
+  );
+  const storeOpts = [{ value: "all", label: "All" }].concat(
+    STORES.map((s) => ({ value: s, label: s })),
+  );
   const chips = ["all", "new-low", "strong", "routine"]
-    .map(
-      (v) =>
-        `<button type="button" data-verdict="${v}" class="chip ${f.verdict === v ? "on" : ""}">${v === "all" ? "All verdicts" : VERDICTS[v].label}</button>`,
-    )
+    .map((v) => {
+      const label = v === "all" ? "All verdicts" : VERDICTS[v].label;
+      return (
+        '<button type="button" class="chip" data-verdict="' +
+        v +
+        '" aria-pressed="' +
+        (state.verdict === v ? "true" : "false") +
+        '">' +
+        label +
+        "</button>"
+      );
+    })
     .join("");
-  return `<section class="controls" id="controls">
-  <label class="search">Search <input id="q" type="search" placeholder="Try “AirPods”, “TV”, “Dyson”…" value="${esc(f.q)}"></label>
-  <label>Category <select id="category">${opt(cats, f.category)}</select></label>
-  <label>Store <select id="store">${opt(stores, f.store)}</select></label>
-  <label>Min. discount <select id="minPct">
-    ${[0, 25, 40, 50].map((n) => `<option value="${n}" ${f.minPct === n ? "selected" : ""}>${n === 0 ? "Any" : n + "% or more"}</option>`).join("")}
-  </select></label>
-  <label>Sort by <select id="sort">
-    <option value="saving" ${f.sort === "saving" ? "selected" : ""}>Biggest saving ($)</option>
-    <option value="percent" ${f.sort === "percent" ? "selected" : ""}>Biggest discount (%)</option>
-    <option value="cheap" ${f.sort === "cheap" ? "selected" : ""}>Cheapest first</option>
-    <option value="newlow" ${f.sort === "newlow" ? "selected" : ""}>New lows first</option>
-  </select></label>
-  <div class="chips">${chips}</div>
-</section>`;
+  return (
+    '<section class="controls" aria-label="Search and filter">' +
+    '<div class="controls-grid">' +
+    '<div class="field"><label for="q">Search</label>' +
+    '<input id="q" name="q" type="search" value="' +
+    esc(state.q) +
+    '" placeholder="Try &quot;AirPods&quot;, &quot;TV&quot;, &quot;Dyson&quot;…"></div>' +
+    '<div class="field"><label for="category">Category</label>' +
+    '<select id="category" name="category">' +
+    selectOptions(categoryOpts, state.category) +
+    "</select></div>" +
+    '<div class="field"><label for="store">Store</label>' +
+    '<select id="store" name="store">' +
+    selectOptions(storeOpts, state.store) +
+    "</select></div>" +
+    '<div class="field"><label for="min">Min. discount</label>' +
+    '<select id="min" name="min">' +
+    selectOptions(MIN_DISCOUNTS, state.minDiscount) +
+    "</select></div>" +
+    '<div class="field"><label for="sort">Sort by</label>' +
+    '<select id="sort" name="sort">' +
+    selectOptions(SORTS, state.sort) +
+    "</select></div>" +
+    "</div>" +
+    '<div class="verdict-row" role="group" aria-label="Verdict">' +
+    chips +
+    "</div>" +
+    "</section>"
+  );
 }
 
-export function listPage(f) {
-  const shown = applyFilters(f);
-  const t = totals(deals);
-  const top = [...deals].sort((a, b) => b.was - b.price - (a.was - a.price)).slice(0, 3);
-  const hero =
-    f.q === "" && f.category === "all" && f.store === "all" && f.verdict === "all" && f.minPct === 0
-      ? `<section class="hero"><h2>Top of the board — biggest savings today</h2><div class="hero-grid">${heroCard(top[0], "#1 BIGGEST SAVING")}${heroCard(top[1], "#2")}${heroCard(top[2], "#3")}</div></section>
-  <section class="compare-wrap">${comparisons.map(comparePanel).join("")}</section>`
-      : "";
-  const cards = shown.map(dealCard).join("");
-  const empty =
-    shown.length === 0
-      ? `<p class="empty">No deal matches those filters. <a href="#/">Clear the filters</a> to see all ${deals.length} deals.</p>`
-      : "";
-  return `${statsStrip(t)}${hero}${controls(f)}
-<p class="count" id="count">Showing <b>${shown.length}</b> of ${deals.length} deals${f.sort ? ` · sorted by ${esc(documentSortLabel(f.sort))}` : ""}</p>
-<div class="grid">${cards}</div>${empty}
-<section class="windows"><h2>Sale windows</h2><ul>${SALE_WINDOWS.map((w) => `<li><b>${esc(w.store)}</b> — ${esc(w.window)}</li>`).join("")}</ul>
-<p>Cyber Monday is Monday 30 Nov. Prices move all day on Black Friday — always confirm the price at checkout before you buy.</p></section>`;
+export function renderHome(state) {
+  const shown = applyFilters(deals, state);
+  const plain = isDefaultState(state);
+  let html = statsStrip();
+  if (plain) html += heroSection() + compareSection();
+  html += controlsSection(state);
+  html +=
+    '<p class="count-line">Showing <b>' +
+    shown.length +
+    "</b> of " +
+    deals.length +
+    " deals · sorted by " +
+    esc(sortLabel(state.sort)) +
+    "</p>";
+  if (shown.length === 0) {
+    html +=
+      '<p class="empty">No deals match those filters. ' +
+      '<a href="#/">Clear the filters</a> to see all ' +
+      deals.length +
+      " deals.</p>";
+  } else {
+    html +=
+      '<section class="grid">' +
+      shown.map(dealCard).join("") +
+      "</section>";
+  }
+  return html;
 }
 
-function documentSortLabel(sort) {
-  return { saving: "biggest saving", percent: "biggest discount", cheap: "cheapest first", newlow: "new lows first" }[sort];
+function saleWindowFor(store) {
+  const found = SALE_WINDOWS.find((w) => w.store === store);
+  return found ? found.window : "Black Friday, 27 Nov 2026";
 }
 
-export function dealPage(d) {
-  const siblings = deals
-    .filter((x) => x.category === d.category && x.id !== d.id)
+export function renderDeal(deal) {
+  const same = deals
+    .filter((d) => d.category === deal.category && d.id !== deal.id)
+    .sort((a, b) => savingOf(b) - savingOf(a))
     .slice(0, 3);
-  return `<p class="back"><a href="#/">&larr; All ${deals.length} deals</a></p>
-<article class="detail">
-  <div class="card-top"><span class="cat">${esc(d.category)}</span><span class="store">${esc(d.store)}</span></div>
-  <h1>${esc(d.title)}</h1>
-  <div class="prices big"><span class="now">${usd(d.price)}</span><s class="was">${usd(d.was)}</s><span class="off">${pct(d)}% off</span></div>
-  <p class="save big-save">You save ${usd(saving(d))} off the usual price of ${usd(d.was)}.</p>
-  <div class="verdict-row big">${verdictChip(d)}<span class="evidence">${esc(d.evidence)}</span></div>
-  <p class="verdict-why">${esc(VERDICTS[d.verdict].blurb)}</p>
-  ${d.note ? `<p class="note"><b>Condition:</b> ${esc(d.note)}</p>` : ""}
-  <dl class="facts">
-    <dt>Store</dt><dd>${esc(d.store)}</dd>
-    <dt>Sale ends</dt><dd>${esc((SALE_WINDOWS.find((w) => w.store === d.store) || {}).window || "Black Friday weekend")}</dd>
-    <dt>Price checked</dt><dd>${checkedShort(d.checked)}</dd>
-    <dt>Where it was read</dt><dd>${esc(d.source)}</dd>
-  </dl>
-  <a class="buy big-buy" href="${esc(d.url)}" target="_blank" rel="noopener">View this deal at ${esc(d.store)} ↗</a>
-  <p class="checkout-note">Check the price at checkout — Black Friday prices move during the day.</p>
-</article>
-${siblings.length ? `<section class="siblings"><h2>More in ${esc(d.category)}</h2><div class="grid">${siblings.map(dealCard).join("")}</div></section>` : ""}`;
+  const note = deal.note ? '<p class="deal-note">' + esc(deal.note) + "</p>" : "";
+  return (
+    '<p><a class="back-link" href="#/">← All ' +
+    deals.length +
+    " deals</a></p>" +
+    '<article class="detail">' +
+    '<p class="detail-top"><span class="cat">' +
+    esc(deal.category) +
+    '</span><span class="store">' +
+    esc(deal.store) +
+    "</span></p>" +
+    "<h1>" +
+    esc(deal.title) +
+    "</h1>" +
+    priceRow(deal, true) +
+    '<p class="save-line">You save ' +
+    money(savingOf(deal)) +
+    " off the usual price of " +
+    money(deal.was) +
+    ".</p>" +
+    '<p class="verdict">' +
+    verdictChip(deal) +
+    '<span class="verdict-text">' +
+    esc(deal.evidence) +
+    "</span></p>" +
+    '<p class="detail-blurb">' +
+    esc(VERDICTS[deal.verdict].blurb) +
+    "</p>" +
+    '<table class="facts"><tbody>' +
+    "<tr><th>Store</th><td>" +
+    esc(deal.store) +
+    "</td></tr>" +
+    "<tr><th>Sale ends</th><td>" +
+    esc(saleWindowFor(deal.store)) +
+    "</td></tr>" +
+    "<tr><th>Price checked</th><td>" +
+    CHECKED_SHORT +
+    "</td></tr>" +
+    "<tr><th>Where it was read</th><td>" +
+    esc(deal.source) +
+    "</td></tr>" +
+    "</tbody></table>" +
+    '<p><a class="btn" href="' +
+    esc(deal.url) +
+    '" target="_blank" rel="noopener">View this deal at ' +
+    esc(deal.store) +
+    " ↗</a></p>" +
+    note +
+    '<p class="detail-note">Check the price at checkout — Black Friday prices move during the day.</p>' +
+    "</article>" +
+    '<h2 class="section-title">More in ' +
+    esc(deal.category.toLowerCase()) +
+    "</h2>" +
+    '<section class="grid more-grid">' +
+    same.map(dealCard).join("") +
+    "</section>"
+  );
 }
 
-export function missingPage() {
-  return `<h1>Deal not found</h1><p>There is no deal at this address. <a href="#/">See all ${deals.length} deals</a>.</p>`;
+export function renderNotFound(id) {
+  return (
+    '<p><a class="back-link" href="#/">← All ' +
+    deals.length +
+    " deals</a></p>" +
+    '<p class="empty">No deal called “' +
+    esc(id) +
+    "” is on the board. " +
+    '<a href="#/">See all ' +
+    deals.length +
+    " deals</a>.</p>"
+  );
 }
 
-export function currentHash(f) {
-  return filtersToHash(f);
-}
+export { hashFromState };

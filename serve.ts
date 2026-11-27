@@ -1,59 +1,66 @@
-// A tiny static server for developing the site: `node serve.ts`
-// serves app/ at http://localhost:8080 (pass --port <n> for another
-// port). Standard library only; it sends the MIME types a browser
-// needs and refuses any path that escapes app/.
+// Black Friday Radar — a tiny static server for the site.
+//
+// Serves app/ at http://localhost:8080 (or --port <n>). Standard
+// library only; nothing is installed and nothing leaves the disk.
+//
+//   node serve.ts
+//   node serve.ts --port 8081
 
-import { createReadStream, statSync } from "node:fs";
+import { createReadStream } from "node:fs";
 import { createServer } from "node:http";
-import { extname, join, normalize, resolve, sep } from "node:path";
+import { dirname, extname, join, normalize, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { stat } from "node:fs/promises";
 
-const appRoot = resolve(fileURLToPath(new URL("./app", import.meta.url)));
-const args = process.argv.slice(2);
-const portFlag = args.indexOf("--port");
-const wanted = portFlag === -1 ? 8080 : Number(args[portFlag + 1]);
-const port = Number.isInteger(wanted) && wanted > 0 && wanted < 65536 ? wanted : 8080;
+const appDir = join(dirname(fileURLToPath(import.meta.url)), "app");
 
-const MIME = {
+const types: Record<string, string> = {
   ".html": "text/html; charset=utf-8",
+  ".css": "text/css; charset=utf-8",
   ".js": "text/javascript; charset=utf-8",
   ".mjs": "text/javascript; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
   ".json": "application/json; charset=utf-8",
-  ".png": "image/png",
   ".jpg": "image/jpeg",
   ".jpeg": "image/jpeg",
+  ".png": "image/png",
+  ".svg": "image/svg+xml",
 };
 
-createServer((request, response) => {
-  let pathname;
+function portFromArgs(argv: string[]): number {
+  const flag = argv.indexOf("--port");
+  if (flag >= 0 && argv[flag + 1]) {
+    const port = Number.parseInt(argv[flag + 1], 10);
+    if (Number.isInteger(port) && port > 0 && port < 65536) return port;
+  }
+  return 8080;
+}
+
+const port = portFromArgs(process.argv.slice(2));
+
+const server = createServer(async (req, res) => {
   try {
-    pathname = decodeURIComponent(new URL(request.url ?? "/", "http://localhost").pathname);
+    const url = new URL(req.url || "/", "http://localhost");
+    let path = decodeURIComponent(url.pathname);
+    if (path === "/") path = "/index.html";
+    const file = resolve(join(appDir, normalize(path)));
+    // A request must stay inside app/: no climbing out with "..".
+    if (!file.startsWith(appDir + "/") && file !== appDir) {
+      res.writeHead(403, { "content-type": "text/plain" });
+      res.end("Forbidden\n");
+      return;
+    }
+    const info = await stat(file);
+    if (!info.isFile()) throw new Error("not a file");
+    res.writeHead(200, {
+      "content-type": types[extname(file).toLowerCase()] || "application/octet-stream",
+    });
+    createReadStream(file).pipe(res);
   } catch {
-    response.writeHead(400).end("bad request");
-    return;
+    res.writeHead(404, { "content-type": "text/plain" });
+    res.end("Not found\n");
   }
-  if (pathname.endsWith("/")) pathname += "index.html";
-  const file = resolve(join(appRoot, normalize(pathname)));
-  if (file !== appRoot && !file.startsWith(appRoot + sep)) {
-    response.writeHead(403).end("forbidden");
-    return;
-  }
-  let size;
-  try {
-    const stats = statSync(file);
-    if (!stats.isFile()) throw new Error("not a file");
-    size = stats.size;
-  } catch {
-    response.writeHead(404).end("not found");
-    return;
-  }
-  response.writeHead(200, {
-    "content-type": MIME[extname(file).toLowerCase()] ?? "application/octet-stream",
-    "content-length": size,
-    "cache-control": "no-store",
-  });
-  createReadStream(file).pipe(response);
-}).listen(port, "127.0.0.1", () => {
-  console.log(`app/ is on http://localhost:${port}`);
+});
+
+server.listen(port, () => {
+  console.log("Black Friday Radar at http://localhost:" + port + "/");
 });
