@@ -1,0 +1,204 @@
+/* Black Friday Radar — one stylesheet, no framework, no web fonts.
+   Paper background, ink text, signal-red accents; verdicts get their
+   own colours (green new low, amber strong, grey routine) so a shopper
+   can scan a grid and see what is actually worth buying. */
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: #f6efe3;
+  color: #1c1710;
+  font-family: "Helvetica Neue", Arial, system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+}
+a { color: #a30e1e; }
+a:hover { text-decoration-thickness: 2px; }
+
+/* Masthead */
+.masthead {
+  background: #14100b;
+  color: #f6efe3;
+  padding: 12px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.brand { font-size: 26px; letter-spacing: 1px; font-weight: 400; }
+.brand b { color: #ff5a3c; font-weight: 900; }
+.radar-dot {
+  display: inline-block;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  background: #37b24d;
+  margin-right: 6px;
+  box-shadow: 0 0 0 4px rgba(55, 178, 77, 0.35);
+}
+.live { color: #ff5a3c; font-weight: 800; letter-spacing: 1px; }
+.masthead-right { font-size: 13px; color: #d8cdb8; }
+
+main { max-width: 1240px; margin: 0 auto; padding: 14px 16px 30px; }
+footer {
+  max-width: 1240px; margin: 0 auto; padding: 18px 16px 34px;
+  font-size: 12.5px; color: #5c5344; border-top: 2px solid #14100b;
+}
+footer p { margin: 8px 0; }
+
+/* Stats strip */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin: 2px 0 14px;
+}
+.stat {
+  background: #fffdf7;
+  border: 2px solid #14100b;
+  padding: 10px 12px;
+}
+.stat b { display: block; font-size: 26px; line-height: 1.1; color: #a30e1e; }
+.stat span { font-size: 12px; color: #5c5344; }
+
+/* Hero: top of the board */
+.hero h2, .compare h2, .siblings h2, .windows h2 {
+  font-size: 15px; text-transform: uppercase; letter-spacing: 1.5px;
+  margin: 16px 0 8px; border-bottom: 2px solid #14100b; padding-bottom: 4px;
+}
+.hero-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.hero-card {
+  background: #14100b; color: #f6efe3;
+  padding: 12px 14px; border: 2px solid #14100b;
+}
+.hero-card h3 { margin: 6px 0 2px; font-size: 17px; line-height: 1.25; }
+.hero-card h3 a { color: #fff; text-decoration: none; }
+.hero-tag { color: #ff5a3c; font-weight: 900; font-size: 12px; letter-spacing: 1px; }
+.hero-store { font-size: 12.5px; color: #d8cdb8; }
+.hero-card .prices { margin-top: 8px; }
+.hero-card .was { color: #b9ad97; }
+.hero-card .save { color: #ffd9a8; font-size: 13px; margin-top: 4px; }
+.hero-card .checked { color: #b9ad97; font-size: 12px; margin-top: 4px; }
+.hero-card .buy { margin-top: 10px; }
+
+/* Compare tables */
+.compare-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.compare { background: #fffdf7; border: 2px solid #14100b; padding: 10px 14px; }
+.compare h2 { margin-top: 0; }
+.compare table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.compare th, .compare td { text-align: left; padding: 5px 6px; border-bottom: 1px solid #e3d9c4; }
+.compare td.num { font-weight: 800; font-size: 16px; white-space: nowrap; }
+.compare tr.best td { background: #e6f7e9; }
+.compare .src { font-size: 12px; color: #5c5344; margin: 6px 0 0; }
+
+/* Controls */
+.controls {
+  background: #fffdf7;
+  border: 2px solid #14100b;
+  padding: 10px 12px;
+  margin: 14px 0 6px;
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: end;
+}
+.controls label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.controls label.search { flex: 1 1 220px; }
+.controls input, .controls select {
+  display: block; width: 100%; margin-top: 3px;
+  font: inherit; font-size: 14px; text-transform: none; letter-spacing: normal;
+  padding: 7px 8px; border: 1.5px solid #14100b; background: #fff; color: #1c1710;
+}
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip {
+  font: inherit; font-size: 12px; font-weight: 800; letter-spacing: 0.5px;
+  padding: 7px 10px; border: 1.5px solid #14100b; background: #fff; cursor: pointer;
+}
+.chip.on { background: #14100b; color: #fff; }
+.count { font-size: 13.5px; color: #5c5344; margin: 8px 0 10px; }
+
+/* Deal grid */
+.grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.card {
+  background: #fffdf7;
+  border: 1.5px solid #d8cdb8;
+  border-top: 4px solid #14100b;
+  padding: 10px 12px 12px;
+  display: flex; flex-direction: column;
+}
+.card-top { display: flex; justify-content: space-between; font-size: 11.5px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+.card-top .cat { color: #a30e1e; }
+.card-top .store { color: #5c5344; }
+.card h3 { margin: 6px 0 6px; font-size: 15px; line-height: 1.3; }
+.card h3 a { color: #1c1710; text-decoration: none; }
+.prices { display: flex; align-items: baseline; gap: 7px; flex-wrap: wrap; }
+.now { font-size: 24px; font-weight: 900; }
+.was { color: #8a7d68; font-size: 14px; }
+.off {
+  background: #a30e1e; color: #fff; font-weight: 900; font-size: 12px;
+  padding: 2px 6px; border-radius: 2px;
+}
+.save { font-size: 13px; font-weight: 700; color: #146c2e; }
+.verdict-row { display: flex; gap: 7px; align-items: flex-start; margin-top: 7px; }
+.verdict {
+  flex: none; font-size: 11px; font-weight: 900; letter-spacing: 0.5px;
+  padding: 3px 6px; border-radius: 2px; color: #fff; white-space: nowrap;
+}
+.verdict-new-low { background: #146c2e; }
+.verdict-strong { background: #b26a00; }
+.verdict-routine { background: #6b6257; }
+.evidence { font-size: 12.5px; color: #3d362b; }
+.checked { font-size: 11.5px; color: #8a7d68; margin-top: 7px; }
+.card-actions { display: flex; gap: 8px; align-items: center; margin-top: auto; padding-top: 10px; }
+.buy {
+  display: inline-block; background: #a30e1e; color: #fff; font-weight: 800;
+  font-size: 13.5px; text-decoration: none; padding: 8px 12px; border-radius: 2px;
+}
+.buy:hover { background: #7d0a17; }
+.details { font-size: 13px; font-weight: 700; }
+.empty { background: #fffdf7; border: 2px dashed #a30e1e; padding: 16px; }
+
+/* Detail page */
+.back { font-size: 13.5px; font-weight: 700; }
+.detail {
+  background: #fffdf7; border: 2px solid #14100b; border-top: 6px solid #a30e1e;
+  padding: 18px 20px; max-width: 860px;
+}
+.detail h1 { font-size: 28px; margin: 8px 0 10px; line-height: 1.2; }
+.prices.big .now { font-size: 40px; }
+.prices.big .was { font-size: 19px; }
+.prices.big .off { font-size: 15px; }
+.big-save { font-size: 16px; }
+.verdict-row.big { margin: 12px 0 4px; }
+.verdict-why { font-size: 13.5px; color: #5c5344; margin: 4px 0 10px; }
+.note { background: #fff3d6; border-left: 4px solid #b26a00; padding: 8px 10px; font-size: 13.5px; }
+.facts { display: grid; grid-template-columns: 150px 1fr; gap: 5px 12px; font-size: 14px; margin: 14px 0; }
+.facts dt { font-weight: 800; color: #5c5344; }
+.facts dd { margin: 0; }
+.big-buy { font-size: 16px; padding: 11px 16px; }
+.checkout-note { font-size: 13px; color: #5c5344; }
+.siblings { margin-top: 18px; }
+
+/* Sale windows */
+.windows { margin-top: 20px; background: #fffdf7; border: 1.5px solid #d8cdb8; padding: 4px 14px 12px; }
+.windows ul { margin: 6px 0; padding-left: 18px; }
+.windows p { font-size: 13px; color: #5c5344; }
+
+/* Phones */
+@media (max-width: 1000px) {
+  .grid { grid-template-columns: repeat(2, 1fr); }
+  .hero-grid { grid-template-columns: 1fr; }
+  .compare-wrap { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+  body { font-size: 14px; }
+  .brand { font-size: 21px; }
+  .masthead-right { font-size: 12px; }
+  main { padding: 10px 10px 24px; }
+  .grid { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .stat b { font-size: 21px; }
+  .controls label.search { flex-basis: 100%; }
+  .detail h1 { font-size: 22px; }
+  .prices.big .now { font-size: 32px; }
+  .facts { grid-template-columns: 110px 1fr; }
+}
