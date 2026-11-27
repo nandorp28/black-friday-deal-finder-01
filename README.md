@@ -1,3 +1,7 @@
+[![make.fun · black-friday-deal-finder-01](https://make.fun/badge/black-friday-deal-finder-01.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
+[![rank](https://make.fun/badge/black-friday-deal-finder-01/nandorp28/black-friday-deal-finder-01/rank.svg)](https://make.fun/bounty/black-friday-deal-finder-01/leaderboard?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
+[![reward](https://make.fun/badge/black-friday-deal-finder-01/nandorp28/black-friday-deal-finder-01/reward.svg)](https://make.fun/bounty/black-friday-deal-finder-01?utm_source=github&utm_medium=readme&utm_campaign=black-friday-deal-finder-01)
+
 [![Black Friday Deal Finder](https://img.shields.io/badge/make.fun-Black%20Friday%20Deal%20Finder-red)](https://make.fun/bounty/black-friday-deal-finder-01)
 [![40 verified deals](https://img.shields.io/badge/deals-40%20verified-green)](https://make.fun/bounty/black-friday-deal-finder-01)
 [![MIT license](https://img.shields.io/badge/license-MIT-blue)](https://make.fun/bounty/black-friday-deal-finder-01)
